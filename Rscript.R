@@ -2,6 +2,7 @@
 library("WikidataQueryServiceR")
 library("rJava")
 library("rcdk")
+library("pls")
 
 sparql_query <- 'SELECT ?comp ?compLabel ?bp ?bpUnit ?bpUnitLabel ?SMILE WHERE {
     ?comp wdt:P31/wdt:P279* wd:Q41581 ;
