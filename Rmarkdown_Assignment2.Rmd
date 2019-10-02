@@ -1,0 +1,80 @@
+---
+title: "Rmarkdown_assignment2"
+author: "Manon Michon"
+date: "10/2/2019"
+output: html_document
+---
+# About the assignment
+[text]
+
+# [text please]
+## Packages
+In order to use the functions needed to execute the code, packages need to be installed and added to the library.
+Since packages only have to be installed once, they are commented out. In case you haven't installed these packages, please uncomment the install.packages lines in order to install the needed packages.
+
+```{r}
+
+#install.packages("WikidataQueryServiceR")
+#install.packages("rJava")
+#install.packages("rcdk")
+#install.packages("pls")
+
+library("WikidataQueryServiceR")
+library("rJava")
+library("rcdk")
+library("pls")
+```
+
+#Obtaining the data
+
+The data used in this model is obtained from wikidata. Molecular descriptors used as [fancy term] will be obtained from the github of the rcdk package.
+
+## The SPARQL query
+
+The function query_wikidata is able to use the written SPARQL query (_sparql_query_) to request the data from wikidata. The result will be stored in a dataframe. Since we are interested in data with solely 'Kelvin' as unit, the _query_result_ is subset into a dataframe only consisting of data with 'Kelvin' as unit (_subset_query_).
+
+``` {r}
+#defining the SPARQL query
+sparql_query <- 'SELECT DISTINCT ?comp ?compLabel ?bp ?bpUnit ?bpUnitLabel ?SMILE WHERE {
+    ?comp wdt:P31/wdt:P279* wd:Q41581 ;
+  p:P2102 [
+    ps:P2102 ?bp ;
+    psv:P2102/wikibase:quantityUnit  ?bpUnit
+    ] ;
+  wdt:P233 ?SMILE .
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+}'
+query_result = query_wikidata(sparql_query); #requesting the query from the wikidata server
+subset_query = query_result[which(query_result$bpUnitLabel == 'kelvin'),]; #selecting the required data
+```
+
+## Testing assumptions
+
+The data is checked by ordering the boiling points from low to high, and then plotting them. Outliers can be seen when points do not follow the general trend. The boiling points are plotted on the y-axis. All points seem to follow the general trend, and no outliers are detected. The general trend is however not straight, which required further testing for normal distribution. From the histogram it can be concluded that dataset is not normally distributed. A scatterplot from the dataset with the original order shows that the data -however not normally distributed- is sufficiently unordered to be able to randomly select a train and test dataset.
+
+``` {r}
+test_assump_subset = subset_query; #duplication of the original dataset
+#ordering the dataset from low to high boiling point
+test_assump_subset = test_assump_subset[order(test_assump_subset$bp, decreasing = FALSE),] 
+plot(test_assump_subset$bp) #plot the boilingpoint
+hist(test_assump_subset$bp) #histogram to check for normal distribution
+plot(subset_query$bp) #check for inequality of data distribution in the original dataset.
+
+```
+
+## Molecular descriptors
+
+``` {r}
+bps_measured = subset_query[,3]; #renaming column 3 of the subsetted query data to further use this column
+smiles = subset_query[,6]; #renaming column 6 of the subsetted query data to further use this column
+mols = parse.smiles(subset_query[,6]); #parses the SMILES given
+descNames <- c( 'org.openscience.cdk.qsar.descriptors.molecular.WienerNumbersDescriptor',
+                'org.openscience.cdk.qsar.descriptors.molecular.APolDescriptor',
+                'org.openscience.cdk.qsar.descriptors.molecular.CarbonTypesDescriptor',
+                'org.openscience.cdk.qsar.descriptors.molecular.AtomCountDescriptor'
+                );
+descs = eval.desc(mols, descNames);
+```
+
+
+
