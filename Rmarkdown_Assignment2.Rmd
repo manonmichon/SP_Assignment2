@@ -27,11 +27,11 @@ library("pls")
 
 #Obtaining the data
 
-The data used in this model is obtained from wikidata. Molecular descriptors used as [fancy term] will be obtained from the github of the rcdk package.
+The data used in this model is obtained from wikidata. Physicochemical properties as molecular descriptors will be obtained from the github of the rcdk package.
 
 ## The SPARQL query
 
-The function query_wikidata is able to use the written SPARQL query (_sparql_query_) to request the data from wikidata. The result will be stored in a dataframe. Since we are interested in data with solely 'Kelvin' as unit, the _query_result_ is subset into a dataframe only consisting of data with 'Kelvin' as unit (_subset_query_).
+The function query_wikidata is able to use the written SPARQL query ('sparql_query') to request the data from wikidata. The result will be stored in a dataframe. Since we are interested in data with solely 'Kelvin' as unit, the 'query_result' is subset into a dataframe only consisting of data with 'Kelvin' as unit ('subset_query').
 
 ``` {r}
 #defining the SPARQL query
@@ -53,28 +53,54 @@ subset_query = query_result[which(query_result$bpUnitLabel == 'kelvin'),]; #sele
 The data is checked by ordering the boiling points from low to high, and then plotting them. Outliers can be seen when points do not follow the general trend. The boiling points are plotted on the y-axis. All points seem to follow the general trend, and no outliers are detected. The general trend is however not straight, which required further testing for normal distribution. From the histogram it can be concluded that dataset is not normally distributed. A scatterplot from the dataset with the original order shows that the data -however not normally distributed- is sufficiently unordered to be able to randomly select a train and test dataset.
 
 ``` {r}
-test_assump_subset = subset_query; #duplication of the original dataset
-#ordering the dataset from low to high boiling point
+test_assump_subset = subset_query; # Duplication of the original dataset
+# Ordering the dataset from low to high boiling point
 test_assump_subset = test_assump_subset[order(test_assump_subset$bp, decreasing = FALSE),] 
-plot(test_assump_subset$bp) #plot the boilingpoint
-hist(test_assump_subset$bp) #histogram to check for normal distribution
-plot(subset_query$bp) #check for inequality of data distribution in the original dataset.
+plot(test_assump_subset$bp, main = "Scatterplot of query data") # Plot the boilingpoint
+hist(test_assump_subset$bp, main = "Histogram of query data") # Histogram to check for normal distribution
+plot(subset_query$bp, main = "Distribution of query data") # Check for inequality of data distribution in the original dataset.
 
 ```
 
-## Molecular descriptors
+## Molecular descriptors and dataset editing
+
+Certain columns from the query subset are extracted and renamed to use them at a further point in the process.
+The chosen physicochemical properties are retrieved from the rcdk github for the selected parsed SMILES. These results are stored in 'descs' as a dataframe, to which the boilingpoints from the wikidata query are added. From this, two subsets are made: a training-set and a test-set. The splitting of the data into a training- and test-set can be done in any matter, based on the random distribution seen above. The way the data is split does however affect the error calculated further on.
 
 ``` {r}
-bps_measured = subset_query[,3]; #renaming column 3 of the subsetted query data to further use this column
-smiles = subset_query[,6]; #renaming column 6 of the subsetted query data to further use this column
-mols = parse.smiles(subset_query[,6]); #parses the SMILES given
+bps_measured = subset_query[,3]; # Renaming column 3 of the subsetted query data to further use this column
+smiles = subset_query[,6]; # Renaming column 6 of the subsetted query data to further use this column
+
+mols = parse.smiles(subset_query[,6]); # Parses the SMILES given
+# Selection of physicochemical properties requested
 descNames <- c( 'org.openscience.cdk.qsar.descriptors.molecular.WienerNumbersDescriptor',
                 'org.openscience.cdk.qsar.descriptors.molecular.APolDescriptor',
                 'org.openscience.cdk.qsar.descriptors.molecular.CarbonTypesDescriptor',
                 'org.openscience.cdk.qsar.descriptors.molecular.AtomCountDescriptor'
                 );
-descs = eval.desc(mols, descNames);
+descs = eval.desc(mols, descNames); # Request the properties for the selected SMILES
+
+desc_dataset = cbind(descs, bps_measured) # Binding the molecular descriptors with boilingpoints
+desc_test = desc_dataset[1:20,]; # Establishing a test dataset
+desc_train = desc_dataset[21:114,] # Establishing a train dataset
 ```
+
+
+# The Model
+
+A Partial Least Squares Regression model is constructed using the PLS package to investigate whether the boiling points of the aliphatic alkanes can be predicted. The model is validated using the Leave-One-Out validation method from the PLS package.
+The RMSEP (Root Mean Square Error of Prediction) plot show the expected error for each number of components used in the model. Based on this graph, the number of component used for testing will be 2. The error is more or less the same for all number of components higher than one. Using 2 will ensure the simplest model possible.
+The scatterplot of the model shows the distribution of the trainingset data along the regression line. The scatterplot is shown here for 2 components since this is the number of components that will be used for the test-dataset.
+
+``` {r}
+PLStest = plsr(bps_measured ~ ., data = desc_train, validation = "LOO"); # Partial Least Square model
+plot(RMSEP(PLStest), legendpos = "topright", main = "RMSEP plot") # Plot the error for each amount of latent variables considered
+plot(PLStest, ncomp = 2, line = TRUE) # Visualisation of the PLS model
+```
+
+
+
+
 
 
 
