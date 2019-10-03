@@ -36,8 +36,8 @@ desc_train = desc_dataset[21:114,]
 
 PLStest = plsr(bps_measured ~ ., data = desc_train, validation = "LOO")
 plot(RMSEP(PLStest), legendpos = "topright")
-plot(PLStest)
-#summary(PLStest)
+plot(PLStest, line = TRUE)
+summary(PLStest)
 
 predict(PLStest, ncomp = 2, newdata = desc_test)
 predplot(PLStest, ncomp = 2, newdata = desc_test, asp = 1, line = TRUE)
