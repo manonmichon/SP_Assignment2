@@ -9,6 +9,7 @@ output: html_document
 
 # [text please]
 ## Packages
+
 In order to use the functions needed to execute the code, packages need to be installed and added to the library.
 Since packages only have to be installed once, they are commented out. In case you haven't installed these packages, please uncomment the install.packages lines in order to install the needed packages.
 
@@ -88,6 +89,8 @@ desc_train = desc_dataset[21:114,] # Establishing a train dataset
 
 # The Model
 
+## Construction of the Model and training
+
 A Partial Least Squares Regression model is constructed using the PLS package to investigate whether the boiling points of the aliphatic alkanes can be predicted. The model is validated using the Leave-One-Out validation method from the PLS package.
 The RMSEP (Root Mean Square Error of Prediction) plot show the expected error for each number of components used in the model. Based on this graph, the number of component used for testing will be 2. The error is more or less the same for all number of components higher than one. Using 2 will ensure the simplest model possible.
 The scatterplot of the model shows the distribution of the trainingset data along the regression line. The scatterplot is shown here for 2 components since this is the number of components that will be used for the test-dataset.
@@ -98,9 +101,18 @@ plot(RMSEP(PLStest), legendpos = "topright", main = "RMSEP plot") # Plot the err
 plot(PLStest, ncomp = 2, line = TRUE) # Visualisation of the PLS model
 ```
 
+## Testing of the model
+
+Now that the model has been constructed, it can be tested. The predict function will use the previously constructed PLS model to try to predict boiling points based on the molecular descriptors of the data in the test dataset. The number of components used here is 2. This was found to be the simplest model while also being within a reasonable error range.
+The result was plotted in a scatterplot. The regression line shown here visualises the model.
+The RMSEP function displays again the error of the model for each number of components The fact that the error here was the lowest for 2 components confirms that this was choosen correctly.
 
 
-
+``` {r}
+predict(PLStest, ncomp = 2, newdata = desc_test) # Prediction of boilingpoints using the test data
+predplot(PLStest, ncomp = 2, newdata = desc_test, asp = 1, line = TRUE) # The test data is plotted
+RMSEP(PLStest, newdata = desc_test) # RMSEP for each of the possible components for the test dataset
+```
 
 
 
