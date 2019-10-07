@@ -13,7 +13,7 @@ output: html_document
 In order to use the functions needed to execute the code, packages need to be installed and added to the library.
 Since packages only have to be installed once, they are commented out. In case you haven't installed these packages, please uncomment the install.packages lines in order to install the needed packages.
 
-```{r}
+```{r warning = FALSE, message = FALSE}
 
 #install.packages("WikidataQueryServiceR")
 #install.packages("rJava")
