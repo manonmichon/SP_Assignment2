@@ -5,9 +5,9 @@ date: "10/2/2019"
 output: html_document
 ---
 # About the assignment
-[text]
+In 1947 Mr Wiener wrote an article stating that boiling points for alphetic alkanes can be predicted using physicochemical properties (Wiener, 1947). In this assignment molecular descriptors will be used in order to create a partial linear regression (PLS) model and investigate whether it is possible to predict the boiling points with such model.
 
-# [text please]
+# The code
 ## Packages
 
 In order to use the functions needed to execute the code, packages need to be installed and added to the library.
