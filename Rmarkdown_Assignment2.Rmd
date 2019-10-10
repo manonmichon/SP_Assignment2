@@ -9,8 +9,7 @@ In 1947 Mr Wiener wrote an article stating that boiling points for alphetic alka
 
 # Packages
 
-In order to use the functions needed to execute the code, packages need to be installed and added to the library.
-Since packages only have to be installed once, they are commented out. In case you haven't installed these packages, please uncomment the install.packages lines in order to install the needed packages.
+In order to use the functions needed to execute the code, packages need to be installed and added to the library. Since packages only have to be installed once, they are commented out. Please uncomment and run the install.packages lines if the needed packages still need to be installed. Already installed packags don't need to be installed again and can simply be loaded and attached to the library using the 'library' function. The packages loaded here are all necessary for the correct execution of the code.
 
 ```{r warning = FALSE, message = FALSE}
 
@@ -19,23 +18,25 @@ Since packages only have to be installed once, they are commented out. In case y
 #install.packages("rcdk")
 #install.packages("pls")
 
+# Load and attach required packages. 
 library("WikidataQueryServiceR")
 library("rJava")
 library("rcdk")
 library("pls")
+
 ```
 
 #Obtaining the data
 
-Before the model can be constructed, data needs to be obtained. The data used in this model is obtained from wikidata. Physicochemical properties such as molecular descriptors will be obtained from the github of the rcdk package. 
+Before the model can be constructed, data needs to be obtained. The data used in this model is obtained from wikidata using a SPARQL query and is afterwards tested for assumptions. Physicochemical properties such as molecular descriptors are obtained from the github of the rcdk package.
 
 ## The SPARQL query
 
-The function query_wikidata is able to use the written SPARQL query ('sparql_query') to request the data from wikidata. The result will be stored in a dataframe. Since we are interested in data with solely 'Kelvin' as unit, the 'query_result' is subset into a dataframe only consisting of data with 'Kelvin' as unit ('subset_query').
-Alkanes can also be requested using another unit such as 'Celcius' or 'Fahrenheit'. However, since 'Kelvin' is the official scientific notation and a lot of alkanes will only have boiling point registered in 'Kelvin', it is recommended to keep using 'Kelvin'.
+The function 'query_wikidata' is able to use the written SPARQL query (stored in 'sparql_query') to request the data from wikidata. The result will be stored in a dataframe ('wikidata_query_result). Since we are interested in data with solely 'Kelvin' as unit, the obtained dataset is subset into a dataframe only consisting of data with 'Kelvin' as unit ('subset_query').
+Alphatic alkanes can also be requested from wikidata using another unit for the boiling point temperature such as 'Celcius' or 'Fahrenheit'. However, it is recommended to keep using 'Kelvin' since this is the official scientific notation and a lot of alkanes will only have a boiling point registered in 'Kelvin'.
 
 ``` {r}
-#defining the SPARQL query
+# Defining the SPARQL query
 sparql_query <- 'SELECT DISTINCT ?comp ?compLabel ?bp ?bpUnit ?bpUnitLabel ?SMILE WHERE {
     ?comp wdt:P31/wdt:P279* wd:Q41581 ;
   p:P2102 [
@@ -45,8 +46,9 @@ sparql_query <- 'SELECT DISTINCT ?comp ?compLabel ?bp ?bpUnit ?bpUnitLabel ?SMIL
   wdt:P233 ?SMILE .
   SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
 }'
-query_result = query_wikidata(sparql_query); #requesting the query from the wikidata server
-subset_query = query_result[which(query_result$bpUnitLabel == 'kelvin'),]; #selecting the required data
+wikidata_query_result = query_wikidata(sparql_query); # Requesting the query from the wikidata server
+# Distinguishing the data with the correct unit for the boiling point and subsetting that data
+subset_query = wikidata_query_result[which(wikidata_query_result$bpUnitLabel == 'kelvin'),]; 
 ```
 
 ## Testing assumptions
