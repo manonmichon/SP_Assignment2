@@ -53,15 +53,21 @@ subset_query = wikidata_query_result[which(wikidata_query_result$bpUnitLabel == 
 
 ## Testing assumptions
 
-The data is checked by ordering the boiling points from low to high, and then plotting them. Outliers can be seen when points do not follow the general trend. The boiling points are plotted on the y-axis. All points seem to follow the general trend, and no outliers are detected. The general trend is however not straight, which required further testing for normal distribution. From the histogram it can be concluded that dataset is not normally distributed. A scatterplot from the dataset with the original order shows that the data -however not normally distributed- is sufficiently unordered to be able to randomly select a train and test dataset.
+The subsetted data is duplicated ('test_assump_subset') in order to edit the data to check it without having the chance of editing the original subsetted dataset by accident. The data is checked by ordering the boiling points from low to high, and then plotting them into a scatterplot. Outliers can be seen when points do not follow the general trend displayed in the scatterplot. The boiling points are plotted on the y-axis. All points seem to follow the general trend, and no outliers are detected. The general trend is however not linear, which requires further testing for normal distribution. From the histogram it can be concluded that the dataset is not normally distributed. A scatterplot from the dataset in the original order shows that the data -however not normally distributed- is sufficiently unordered to be able to randomly select a train and test dataset.
 
 ``` {r}
-test_assump_subset = subset_query; # Duplication of the original dataset
+test_assump_subset = subset_query; # Duplication of the original dataset to be sure the original dataset stays intact
 # Ordering the dataset from low to high boiling point
 test_assump_subset = test_assump_subset[order(test_assump_subset$bp, decreasing = FALSE),] 
-plot(test_assump_subset$bp, main = "Scatterplot of query data") # Plot the boilingpoint
-hist(test_assump_subset$bp, main = "Histogram of query data") # Histogram to check for normal distribution
-plot(subset_query$bp, main = "Distribution of query data") # Check for inequality of data distribution in the original dataset.
+
+# Plotting the boiling points ordered from low to high boiling point to check for outliers
+plot(test_assump_subset$bp, main = "Scatterplot of query data", ylab = "Boiling point") 
+
+# Histogram to check for normal distribution
+hist(test_assump_subset$bp, main = "Histogram of query data", xlab = "Boiling point") 
+
+# Checking for inequality of data distribution in the original dataset by plotting the data with no order in boiling point
+plot(subset_query$bp, main = "Distribution of query data", ylab = "Boiling point") 
 
 ```
 
