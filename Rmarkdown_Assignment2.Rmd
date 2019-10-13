@@ -5,11 +5,11 @@ date: "10/2/2019"
 output: html_document
 ---
 # About the assignment
-In 1947 Mr Wiener wrote an article stating that boiling points for alphetic alkanes can be predicted using physicochemical properties (Wiener, 1947). In this assignment molecular descriptors will be used in order to create a partial linear regression (PLS) model and investigate whether it is possible to predict the boiling points with such model.
+In 1947 Mr Wiener wrote an article stating that boiling points for aliphetic alkanes can be predicted using physicochemical properties (Wiener, 1947). In this assignment molecular descriptors will be used in order to create a partial linear regression (PLS) model and investigate whether it is possible to predict the boiling points with such model.
 
 # Packages
 
-In order to use the functions needed to execute the code, packages need to be installed and added to the library. Since packages only have to be installed once, they are commented out. Please uncomment and run the install.packages lines if the needed packages still need to be installed. Already installed packags don't need to be installed again and can simply be loaded and attached to the library using the 'library' function. The packages loaded here are all necessary for the correct execution of the code.
+In order to use the functions needed to execute the code, packages need to be installed and added to the library. Since packages only have to be installed once, they are commented out. Please uncomment and run the install.packages lines if the needed packages still need to be installed. Already installed packages don't need to be installed again and can simply be loaded and attached to the library using the 'library' function. The packages loaded here are all necessary for the correct execution of the code.
 
 ```{r warning = FALSE, message = FALSE}
 
@@ -26,14 +26,14 @@ library("pls")
 
 ```
 
-#Obtaining the data
+# Obtaining the data
 
 Before the model can be constructed, data needs to be obtained. The data used in this model is obtained from wikidata using a SPARQL query and is afterwards tested for assumptions. Physicochemical properties such as molecular descriptors are obtained from the github of the rcdk package.
 
 ## The SPARQL query
 
-The function 'query_wikidata' is able to use the written SPARQL query (stored in 'sparql_query') to request the data from wikidata. The result will be stored in a dataframe ('wikidata_query_result). Since we are interested in data with solely 'Kelvin' as unit, the obtained dataset is subset into a dataframe only consisting of data with 'Kelvin' as unit ('subset_query').
-Alphatic alkanes can also be requested from wikidata using another unit for the boiling point temperature such as 'Celcius' or 'Fahrenheit'. However, it is recommended to keep using 'Kelvin' since this is the official scientific notation and a lot of alkanes will only have a boiling point registered in 'Kelvin'.
+The function 'query_wikidata' is able to use the written SPARQL query (stored in 'sparql_query') to request the data from wikidata. The result will be stored in a dataframe ('wikidata_query_result'). Since we are interested in data with solely 'Kelvin' as unit, the obtained dataset is subset into a dataframe only consisting of data with 'Kelvin' as unit ('subset_query').
+Aliphatic alkanes can also be requested from wikidata using another unit for the boiling point temperature such as 'Celsius' or 'Fahrenheit'. However, it is recommended to keep using 'Kelvin' since this is the official scientific notation and a lot of alkanes will only have a boiling point registered in 'Kelvin'.
 
 ``` {r}
 # Defining the SPARQL query
@@ -53,10 +53,11 @@ subset_query = wikidata_query_result[which(wikidata_query_result$bpUnitLabel == 
 
 ## Testing assumptions
 
-The subsetted data is duplicated ('test_assump_subset') in order to edit the data to check it without having the chance of editing the original subsetted dataset by accident. The data is checked by ordering the boiling points from low to high, and then plotting them into a scatterplot. Outliers can be seen when points do not follow the general trend displayed in the scatterplot. The boiling points are plotted on the y-axis. All points seem to follow the general trend, and no outliers are detected. The general trend is however not linear, which requires further testing for normal distribution. From the histogram it can be concluded that the dataset is not normally distributed. A scatterplot from the dataset in the original order shows that the data -however not normally distributed- is sufficiently unordered to be able to randomly select a train and test dataset.
+The subsetted data is duplicated ('test_assump_subset') in order to edit the data without having the chance of accidentally modifying the original subsetted dataset. The data is checked by ordering the boiling points from low to high, and then plotting them into a scatterplot. Outliers can be seen when points do not follow the general trend displayed in the scatterplot. The boiling points are plotted on the y-axis. All points follow the general trend, and no outliers are detected. The general trend is however not linear, which requires further testing for normal distribution. From the histogram it can be concluded that the dataset is not normally distributed. A scatterplot from the dataset in the original order shows that the data -however not normally distributed- is sufficiently unordered to be able to randomly select a train and test dataset.
 
 ``` {r}
-test_assump_subset = subset_query; # Duplication of the original dataset to be sure the original dataset stays intact
+# Duplication of the original dataset to be sure the original dataset stays intact
+test_assump_subset = subset_query;
 # Ordering the dataset from low to high boiling point
 test_assump_subset = test_assump_subset[order(test_assump_subset$bp, decreasing = FALSE),] 
 
@@ -74,12 +75,14 @@ plot(subset_query$bp, main = "Distribution of query data", ylab = "Boiling point
 ## Molecular descriptors and dataset editing
 
 Certain columns from the query subset are extracted and renamed to more easily use them at a further point in the process.
-The chosen physicochemical properties are retrieved from the rcdk github for the selected parsed SMILES. These results are stored in 'molecular_descriptors' as a dataframe, to which the boilingpoints from the wikidata query are added. From this, two subsets are made: a training-set and a test-set.
-The splitting of the data into a training- and test-set can be done in any matter, based on the random distribution seen above. The way the data is split does however affect the error calculated further on in the model, in a way that when changing the train and test dataset, different data is used to construct and test the model. The uniformity of the dataset on which the model is built and tested influences the resulting range of errors from said dataset.
+The chosen physicochemical properties are retrieved from the rcdk github for the selected parsed SMILES. These results are stored in 'molecular_descriptors' as a dataframe, to which the boiling points from the wikidata query are added. From this, two subsets are made: a training-set and a test-set.
+The splitting of the data into a training- and test-set can be done in any matter, based on the random distribution seen above. The way the data is split does however affect the error calculated further on in the model, in a way that when changing the train- and test-dataset, different data is used to construct and test the model. The uniformity of the dataset on which the model is built and tested influences the resulting range of errors from said dataset.
 
 ``` {r}
-bps_measured = subset_query[,3]; # Renaming column 3 of the subsetted query data to further use and give meaning to this column
-smiles = subset_query[,6]; # Renaming column 6 of the subsetted query data to further use and give meaning to this column
+# Renaming column 3 of the subsetted query data to further use and give meaning to this column
+bps_measured = subset_query[,3]; 
+# Renaming column 6 of the subsetted query data to further use and give meaning to this column
+smiles = subset_query[,6]; 
 
 parsed_smiles = parse.smiles(subset_query[,6]); # Parses the SMILES given
 # Selection of physicochemical properties requested
@@ -88,12 +91,13 @@ selected_properties <- c( 'org.openscience.cdk.qsar.descriptors.molecular.Wiener
                 'org.openscience.cdk.qsar.descriptors.molecular.CarbonTypesDescriptor',
                 'org.openscience.cdk.qsar.descriptors.molecular.AtomCountDescriptor'
                 );
-molecular_descriptors = eval.desc(parsed_smiles, selected_properties); # Request the properties for the selected SMILES
+# Request the properties for the selected SMILES
+molecular_descriptors = eval.desc(parsed_smiles, selected_properties);
 
 # Binding the molecular descriptors with boiling points from the subsetted query result
 moldesc_dataset = cbind(molecular_descriptors, bps_measured)
-desc_test = moldesc_dataset[1:20,]; # Establishing a test dataset with the first twenty alkanes
-desc_train = moldesc_dataset[21:114,] # Establishing a train dataset with the rest of the alkanes
+desc_test = moldesc_dataset[1:20,]; # Establishing a test-dataset with the first twenty alkanes
+desc_train = moldesc_dataset[21:114,] # Establishing a train-dataset with the rest of the alkanes
 ```
 
 
@@ -103,25 +107,27 @@ A Partial Least Squares Regression model is constructed using the PLS package to
 
 ## Construction of the Model and training
 
-The model is constructed using all of the selected molecular descriptors. The amount of components is left empty. The model is validated using a Leave-One-Out validation method.
+The model is constructed using all of the selected molecular descriptors. The number of components is left empty. The model is validated using a Leave-One-Out validation method.
 The RMSEP (Root Mean Square Error of Prediction) plot shows the expected error for each number of components used in the model. The error is more or less the same for all number of components higher than one. Using the lowest amount of component ensures that the model is not overfitted. Based on this graph, the number of components used for testing will be 2.
-The scatterplot of the model shows the distribution of the training set data along the regression line constructed by the model with 2 components.
+The scatterplot of the model shows the distribution of the training-data along the regression line constructed by a 2-component model.
 
 ``` {r}
-PLStest = plsr(bps_measured ~ ., data = desc_train, validation = "LOO"); # Construction of the Partial Least Square model
-plot(RMSEP(PLStest), legendpos = "topright", main = "RMSEP plot") # Plotting the error for each amount of latent variables considered
+# Construction of the Partial Least Square model
+PLStest = plsr(bps_measured ~ ., data = desc_train, validation = "LOO");
+# Plotting the error for each amount of latent variables considered
+plot(RMSEP(PLStest), legendpos = "topright", main = "RMSEP plot")
 plot(PLStest, ncomp = 2, line = TRUE) # Visualisation of the PLS model in combination with the training data
 ```
 
 ## Testing of the model
 
-Now that the model has been constructed, it can be tested. The predict function from the PLS package will use the previously constructed PLS model and try to predict boiling points based on the molecular descriptors of the data in the test dataset. The number of components used here is 2. This was found to be the optimal amount of components as can be seen in the previous paragraph.
-The result was plotted in a scatterplot. The regression line shown here visualises the model and the dots represent the test data. With exception of one point, most of the points lie on or near the regression line of the model.
-The RMSEP function displays again the error of the model for each number of components. The fact that the error here was the lowest for 2 components confirms that this was chosen correctly previously. The errors displayed here are dependent on the chosen test and training dataset, but will however not differ drastically if within a certain dataset different train and test sets were defined.
+Now that the model has been constructed, it can be tested. The predict function from the PLS package will use the previously constructed PLS model and try to predict boiling points based on the molecular descriptors of the data in the test-dataset. The number of components used here is 2. This was found to be the optimal number of components, as can be seen in the previous paragraph.
+The result was plotted in a scatterplot. The regression line shown here visualises the model and the dots represent the test-data. With exception of one point, most of the points lie on or near the regression line of the model.
+The RMSEP function displays again the error of the model for each number of components. The fact that the error here was the lowest for 2 components confirms that this was chosen correctly previously. The errors displayed here are dependent on the chosen test- and training-dataset, but will however not differ drastically if within a certain dataset different train- and test-sets were defined.
 
 
 ``` {r}
-predict(PLStest, ncomp = 2, newdata = desc_test) # Prediction of boiling points using the test data
+predict(PLStest, ncomp = 2, newdata = desc_test); # Prediction of boiling points using the test data
 predplot(PLStest, ncomp = 2, newdata = desc_test, asp = 1, line = TRUE) # The test data is plotted
 RMSEP(PLStest, newdata = desc_test) # RMSEP for each of the possible components for the test dataset
 ```
