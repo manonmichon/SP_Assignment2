@@ -8,7 +8,7 @@ _'Rmarkdown_Assignment2.Rmd'_: An R-markdown (Rmd) file containing the backgroun
 <br>
 _'Rscript.R'_: An R-file containing solely the code for this project. The code is copied from the rmd file and is thus identical to the code in the report. This was done in case a closer look into the code is required without the interruption of text.<br>
 <br>
-_'Rmarkdown_Assignment2.hmtl'_: An hmtl version of the Rmd file 'Rmarkdown_Assignment2.Rmd'. The html can be viewed by clicking here: <a href="https://manonmichon.github.io/SP_Assignment2/Rmarkdown_Assignment2.html">the online version of the html file</a>, or by downloading the file and opening it in a browser.<br>
+_'Rmarkdown_Assignment2.hmtl'_: An html version of the Rmd file 'Rmarkdown_Assignment2.Rmd'. The html can be viewed by clicking here: <a href="https://manonmichon.github.io/SP_Assignment2/Rmarkdown_Assignment2.html">the online version of the html file</a>, or by downloading the file and opening it in a browser.<br>
 <br>
 All files can be downloaded and to a computer running any operating system. 
 
